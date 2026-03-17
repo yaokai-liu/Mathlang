@@ -1,0 +1,17 @@
+.idea
+*.iml
+out
+gen
+cmake-*
+build
+.vscode
+*.list
+json
+*.json
+__pycache__
+*.gen.h
+*.gen.c
+.cache
+grammar/generated
+include/generated/tokens.gen.h
+output

@@ -1,0 +1,9 @@
+[submodule "liu-Mathlang"]
+	path = src-codegen/syntax
+	url = git@github.com:yaokai-liu/Xnf.git
+[submodule "src-codegen/render"]
+	path = src-codegen/render
+	url = git@github.com:yaokai-liu/xnf-json2C.git
+[submodule "meman"]
+	path = meman
+	url = git@github.com:yaokai-liu/meman.git
