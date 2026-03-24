@@ -19,10 +19,27 @@
  *
  * Project Name: Mathlang
  * Module Name: grammar
- * Filename: parse.c
+ * Filename: terminal.h
  * Creator: Yaokai Liu
- * Create Date: 2026-03-14
+ * Create Date: 2026-03-24
  * Copyright (c) 2026 Yaokai Liu. All rights reserved.
  **/
 
-#include "parse.h"
+#ifndef MATHLANG_TERMINAL_H
+#define MATHLANG_TERMINAL_H
+
+#include "array.h"
+
+typedef Array LatexExpression; // Array<LatexSymbol *>
+typedef struct LatexSymbol {
+  uint32_t type;
+  union {
+    struct { uint32_t symid; Array *arguments; } symbol;
+    LatexExpression *expr;
+  } value;
+  Array *superscripts; // Array<LatexSymbol *>
+  Array *subscripts; // Array<LatexSymbol *>
+} LatexSymbol, BaseLatexSymbol;
+
+
+#endif //MATHLANG_TERMINAL_H

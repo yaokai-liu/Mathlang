@@ -43,16 +43,6 @@ typedef struct Location {
   uint32_t column;
 } Location;
 
-typedef struct Terminal {
-  Location location;
-  /// length of the terminal (size in bytes)
-  uint32_t length;
-  /// Token Type
-  uint32_t type;
-  /// value of the terminal
-  void *value;
-} Terminal;
-
 typedef struct Token {
   /// start of the token
   Location start;
