@@ -13,6 +13,6 @@ __pycache__
 *.gen.c
 .cache
 grammar/generated
-include/generated/tokens.gen.h
+include/generated
 output
 .continue
