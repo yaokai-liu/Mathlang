@@ -35,6 +35,7 @@
 
 uint32_t mathlang_single_tokenize(const char_t *input, Token *result, const Allocator *allocator);
 uint32_t latex_single_tokenize(const char_t *input, Token *result, const Allocator *allocator);
+uint32_t arith_single_tokenize(const char_t *input, Token *result, const Allocator *allocator);
 uint32_t pass_space(const char *input, uint32_t *lineno, uint32_t *column);
 
 

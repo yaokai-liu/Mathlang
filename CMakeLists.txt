@@ -49,7 +49,7 @@ set(SRC_TEMPLATE_DIR "${SCR_CODEGEN_DIR}/template")
 set(SRC_SYNTAX_DIR "${SCR_CODEGEN_DIR}/syntax")
 set(SRC_RENDER_DIR "${SCR_CODEGEN_DIR}/render")
 
-list(APPEND PROJECT_AUTOMATONS "Mathlang" "Latex" "Arith")
+list(APPEND PROJECT_AUTOMATONS "Mathlang")
 list(APPEND AUTOMATON_FILES
         "automaton.json"
         "first_set.json"
@@ -75,7 +75,7 @@ foreach(AUTOMATON IN LISTS PROJECT_AUTOMATONS)
 endforeach()
 # generate automaton files
 set(GRAMMARS
-        "Mathlang.xnf:MathEntry:$,MathEntry;Latex.xnf:LatexExpression:$;Arith.xnf:Notation:$"
+        "Mathlang.xnf:MathEntry:$,MathEntry"
 )
 foreach(GRAMMAR_TRIPLE IN LISTS GRAMMARS)
     string(FIND "${GRAMMAR_TRIPLE}" ":" pos)

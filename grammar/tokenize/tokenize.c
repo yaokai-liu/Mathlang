@@ -48,6 +48,7 @@
 
 static uint32_t t_IDENTIFIER(const char_t *input, Token *result, const Allocator *allocator);
 static uint32_t t_NUMBER(const char_t *input, Token *result, const Allocator *allocator);
+static uint32_t t_LATEX_COMMAND(const char_t * input, Token *result, const Allocator *allocator);
 
 static uint32_t try_keyword_Axiom(const char_t *input, uint32_t offs, Token *result, const Allocator *allocator);
 static uint32_t try_keyword_Assumption(const char_t *input, uint32_t offs, Token *result, const Allocator *allocator);
@@ -73,10 +74,14 @@ static uint32_t try_startswith_letter_T(const char_t * input, Token * result, co
 static uint32_t try_startswith_letter_d(const char_t * input, Token * result, const Allocator * allocator);
 static uint32_t try_startswith_letter_l(const char_t * input, Token * result, const Allocator * allocator);
 
+static uint32_t mathlang_tokenize_single_char(const char_t *input, Token *result, const Allocator *allocator);
+static uint32_t latex_tokenize_single_char(const char_t *input, Token *result, const Allocator *allocator);
+static uint32_t arith_tokenize_single_char(const char_t *input, Token *result, const Allocator *allocator);
 
 static uint32_t try_pass_comment(const char *input, uint32_t *lineno, uint32_t *column);
 
-uint32_t t_IDENTIFIER(const char_t * const input, Token * const result, const Allocator * const allocator) {
+// [a-zA-Z][a-zA-Z0-9\-]*
+inline uint32_t t_IDENTIFIER(const char_t * const input, Token * const result, const Allocator * const allocator) {
   const char_t *pText = input;
   if (startswithLetter(pText)) {
     pText++;
@@ -95,7 +100,7 @@ uint32_t t_IDENTIFIER(const char_t * const input, Token * const result, const Al
 }
 
 // [0-9]+((\.[0-9]+?)
-static uint32_t t_NUMBER(const char_t *input, Token *result, const Allocator *allocator) {
+inline uint32_t t_NUMBER(const char_t *input, Token *result, const Allocator *allocator) {
   const char_t *pText = input;
   bool is_fraction = false;
   while (true) {
@@ -124,7 +129,7 @@ static uint32_t t_NUMBER(const char_t *input, Token *result, const Allocator *al
       if (input[i - offs] != pattern[i]) { goto __failed_kw_##_kw; }                    \
     }                                                                                   \
     const char_t * const tail = &input[sizeof(pattern) - 1 - offs];                     \
-    if (startswithLetter(tail) || *tail == '_') { goto __failed_kw_##_kw; }             \
+    if (isIdentChar(tail)) { goto __failed_kw_##_kw; }                                  \
     result->type = MATHLANG_TOKEN_##_type;                                              \
     result->value = nullptr;                                                            \
     result->length = lenof(#_kw);                                                       \
@@ -139,7 +144,7 @@ static uint32_t t_NUMBER(const char_t *input, Token *result, const Allocator *al
       if (input[i - offs] != pattern[i]) { goto __failed_kw_##_kw; }                    \
     }                                                                                   \
     const char_t * const tail = &input[sizeof(pattern) - 1 - offs];                     \
-    if (startswithLetter(tail) || *tail == '_') { goto __failed_kw_##_kw; }             \
+    if (isIdentChar(tail)) { goto __failed_kw_##_kw; }                                  \
     result->type = MATHLANG_TOKEN_##_type;                                              \
     result->value = (void *) val;                                                       \
     result->length = lenof(#_kw);                                                       \
@@ -250,7 +255,7 @@ inline uint32_t try_startswith_letter_l(const char_t * input, Token * result, co
   return try_keyword_latex(input, 1, result, allocator);
 }
 
-uint32_t mathlang_tokenize_single_char(const char_t *const input, Token *const result, const Allocator *) {
+inline uint32_t mathlang_tokenize_single_char(const char_t *const input, Token *const result, const Allocator *) {
   const char_t *pText = input;
   if (!*pText) { return 0; }
   constexpr char SINGLE_CHARS[] = ".,;${}()<>";
@@ -292,10 +297,7 @@ uint32_t mathlang_single_tokenize(const char_t * const input, Token * const resu
     default: {}
   }
   uint32_t length = 0;
-  if (isDecDigital(input)) {
-    length = t_NUMBER(input, result, allocator);
-    return length;
-  }
+  if (isDecDigital(input)) { return t_NUMBER(input, result, allocator); }
   length = mathlang_tokenize_single_char(input, result, allocator);
   if (length > 0) { return length; }
   length = t_IDENTIFIER(input, result, allocator);
@@ -306,33 +308,44 @@ uint32_t mathlang_single_tokenize(const char_t * const input, Token * const resu
   return 0;
 }
 
-uint32_t latex_tokenize_single_char(const char_t *const input, Token *const result, const Allocator *) {
+inline uint32_t latex_tokenize_single_char(const char_t *const input, Token *const result, const Allocator *allocator) {
   const char_t *pText = input;
   if (!*pText) { return 0; }
-  constexpr char SINGLE_CHARS[] = "^_{}[]#";
-  constexpr uint32_t SINGLE_CHAR_TYPES[] = {
-    MATHLANG_TOKEN_CIRCUMFLEX, MATHLANG_TOKEN_UNDERSCORE,
-    MATHLANG_TOKEN_LEFT_BRACKET, MATHLANG_TOKEN_RIGHT_BRACKET,
+  constexpr char SINGLE_CONTROL_SYMBOLS[] = "()[]{}^_#";
+  constexpr uint32_t SINGLE_CONTROL_SYMBOL_TYPES[] = {
+    MATHLANG_TOKEN_LEFT_PARENTHESIS, MATHLANG_TOKEN_RIGHT_PARENTHESIS,
     MATHLANG_TOKEN_LEFT_SQUARE_BRACKET, MATHLANG_TOKEN_RIGHT_SQUARE_BRACKET,
+    MATHLANG_TOKEN_LEFT_BRACKET, MATHLANG_TOKEN_RIGHT_BRACKET,
+    MATHLANG_TOKEN_CIRCUMFLEX, MATHLANG_TOKEN_UNDERSCORE,
     MATHLANG_TOKEN_HASHTAG
   };
-  const uint32_t index = stridx_o(*pText, SINGLE_CHARS);
-  if (index < lenof(SINGLE_CHARS)) {
-    result->type = SINGLE_CHAR_TYPES[index];
+  const uint32_t ctrl_sym_ndx = stridx_o(*pText, SINGLE_CONTROL_SYMBOLS);
+  if (ctrl_sym_ndx < lenof(SINGLE_CONTROL_SYMBOLS)) {
+    result->type = SINGLE_CONTROL_SYMBOL_TYPES[ctrl_sym_ndx];
     result->value = nullptr;
+    result->length = 1;
+    return result->length;
+  }
+  constexpr char SINGLE_LITERAL_SYMBOLS[] = "+-*/&<>?|;:',.";
+  const uint32_t lite_sym_ndx = stridx_o(*pText, SINGLE_LITERAL_SYMBOLS);
+  if (lite_sym_ndx < lenof(SINGLE_LITERAL_SYMBOLS) || startswithLetter(pText) || isDecDigital(pText)) {
+    result->type = MATHLANG_TOKEN_LATEX_SYMBOL;
+    result->value = allocator->calloc(2, sizeof(char_t));
+    ((char_t *) result->value)[0] = *pText;
+    ((char_t *) result->value)[1] = '\0';
     result->length = 1;
     return result->length;
   }
   return 0;
 }
 
-uint32_t t_LATEX_COMMAND(const char_t *const input, Token *const result, const Allocator *allocator) {
+inline uint32_t t_LATEX_COMMAND(const char_t *const input, Token *const result, const Allocator *allocator) {
   const char_t *pText = input;
   if (!*pText) { return 0; }
 
   // \\[a-zA-Z]+
   if (startswithLetter(pText)) {
-    do { pText ++; } while (startswithLetter(pText));
+    do { pText++; } while (startswithLetter(pText));
   } else {
     // other converted symbols
     constexpr char SINGLE_CHARS[] = ".,:;!\\%$#@&^_{}[]~ ";
@@ -353,11 +366,61 @@ uint32_t t_LATEX_COMMAND(const char_t *const input, Token *const result, const A
   return result->length;
 }
 
-uint32_t latex_single_tokenize(const char_t *, Token *, const Allocator *) {
+uint32_t latex_single_tokenize(const char_t *input, Token *result, const Allocator *allocator) {
+  if (!*input) {
+    result->type = MATHLANG_TOKEN_TERMINATOR;
+    result->value = nullptr;
+    result->length = 0;
+    return 0;
+  }
+  if (*input == '\\') { return t_LATEX_COMMAND(input + 1, result, allocator); }
+  const uint32_t length = latex_tokenize_single_char(input, result, allocator);
+  if (length > 0) { return length; }
+  result->type = MATHLANG_TOKEN_BAD_TOKEN;
+  result->value = nullptr;
+  result->length = 0;
   return 0;
 }
 
-uint32_t try_pass_comment(const char * const input, uint32_t * const lineno, uint32_t * const column) {
+inline uint32_t arith_tokenize_single_char(const char_t *const input, Token *const result, const Allocator *) {
+  const char_t *pText = input;
+  if (!*pText) { return 0; }
+  constexpr char SINGLE_CHARS[] = ",()";
+  constexpr uint32_t SINGLE_CHAR_TYPES[] = {
+    MATHLANG_TOKEN_COMMA,
+    MATHLANG_TOKEN_LEFT_PARENTHESIS,
+    MATHLANG_TOKEN_RIGHT_PARENTHESIS
+  };
+  const uint32_t index = stridx_o(*pText, SINGLE_CHARS);
+  if (index < lenof(SINGLE_CHARS)) {
+    result->type = SINGLE_CHAR_TYPES[index];
+    result->value = nullptr;
+    result->length = 1;
+    return result->length;
+  }
+  return 0;
+}
+
+uint32_t arith_single_tokenize(const char_t *input, Token *result, const Allocator *allocator) {
+  if (!*input) {
+    result->type = MATHLANG_TOKEN_TERMINATOR;
+    result->value = nullptr;
+    result->length = 0;
+    return 0;
+  }
+  uint32_t length = 0;
+  if (isDecDigital(input)) { return t_NUMBER(input, result, allocator); }
+  length = arith_tokenize_single_char(input, result, allocator);
+  if (length > 0) { return length; }
+  length = t_IDENTIFIER(input, result, allocator);
+  if (length > 0) { return length; }
+  result->type = MATHLANG_TOKEN_BAD_TOKEN;
+  result->value = nullptr;
+  result->length = 0;
+  return 0;
+}
+
+inline uint32_t try_pass_comment(const char * const input, uint32_t * const lineno, uint32_t * const column) {
   const char *pText = input + 1;
   if (*pText == '/') {
     do { pText++; } while (*pText != '\n' && *pText != '\0');

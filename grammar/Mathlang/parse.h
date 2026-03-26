@@ -18,38 +18,17 @@
  *
  *
  * Project Name: Mathlang
- * Module Name: grammar
- * Filename: action.h
+ * Module Name: grammar/Mathlang
+ * Filename: parse.h
  * Creator: Yaokai Liu
- * Create Date: 2026-03-21
+ * Create Date: 2026-03-26
  * Copyright (c) 2026 Yaokai Liu. All rights reserved.
  **/
 
-#ifndef MATHLANG_ACTION_H
-#define MATHLANG_ACTION_H
+#ifndef MATHLANG_PARSE_H
+#define MATHLANG_PARSE_H
 
-#include <stdint.h>
+#include "mathlang/token.h"
+#include "context.h"
 
-typedef struct state state;
-struct grammar_action {
-    const enum : uint8_t {
-        Mathlang_action_reject = 0,
-        Mathlang_action_stack = 1,
-        Mathlang_action_reduce = 2
-      } action      : 2;
-    // if action
-    // is reduce:     count of tokens to eliminate
-    // otherwise:     0
-    const uint8_t count : 6;
-    // if action
-    // is reduce:     index of type of the result token
-    // otherwise:     0
-    const uint8_t type;
-    // if action
-    // is reduce:     index of the rule to implay
-    // is stack:      index of the next state
-    // otherwise:     0
-    const uint16_t offset;
-};
-
-#endif //MATHLANG_ACTION_H
+#endif //MATHLANG_PARSE_H
