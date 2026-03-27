@@ -28,31 +28,38 @@
 #ifndef MATHLANG_TARGET_H
 #define MATHLANG_TARGET_H
 
-#include "mathlang/token.h"
 #include "array.h"
+#include "Mathlang/char_t.h"
 
-typedef struct MathEntry MathEntry;
+typedef struct MathEntry {} MathEntry, Definition, Theorem, Procedure;
+typedef struct EntryHeader {} DefHeader, ThmHeader, ProcHeader;
+typedef struct TextBlock {} TextBlock;
 
-typedef struct Adjective {} Adjective;
 typedef struct Adverb {} Adverb;
+typedef struct Adjective {} Adjective;
 typedef struct Complement {} Complement;
-typedef Array Arguments; // Array<Argument>
-typedef struct LatexSymbol {} LatexSymbol, BareLatexSymbol;
-typedef struct Noun {} NounPhrase, BareNounPhrase, NotedNoun;
-typedef Array NounPhrases; // Array<NounPhrase>
 typedef struct Objective {} Objective, Subjective;
 typedef struct Verb {} Verb;
 
-typedef struct DefHeader {} DefHeader, ThmHeader, ProcHeader;
-typedef struct MathEntry {} Definition, Theorem, Procedure;
-typedef struct LatexExpression LatexExpression;
+typedef struct Noun {} NounPhrase, BareNounPhrase, NotedNoun;
+typedef Array NounPhrases; // Array<NounPhrase>
+
 typedef struct Notation {} Notation;
+typedef Array Notations; // Array<Notation>
 typedef struct NotationDefinition {} NotationDefinition;
 typedef Array NotationDefinitions; // Array<NotationDefinition>
-typedef Array Notations; // Array<Notation>
-typedef struct Sentence {} Statement, Action, Sentence, StateSentence, OperaSentence;
+typedef struct Sentence {} Statement, Operation, Sentence, StateSentence, OperaSentence;
 typedef Array Sentences, StateSentences, OperaSentences; // Array<Sentence>
-typedef struct Refer {} Refer;
 
-typedef struct TextBlock {} TextBlock;
+typedef struct Refer {} Refer;
+typedef struct LatexExpression {} LatexExpression;
+typedef struct LatexSymbol {} LatexSymbol, BareLatexSymbol;
+
+
+typedef struct {
+  uint32_t      type; // MATHLANG_IDENT_CATEGORY_ENUM
+  REFER(char_t) name;
+} Identifier;
+
+
 #endif //MATHLANG_TARGET_H

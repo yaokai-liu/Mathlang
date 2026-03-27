@@ -30,8 +30,8 @@
 
 #include <stdint.h>
 
-#include "mathlang/char_t.h"
-#include "mathlang/token.h"
+#include "Mathlang/char_t.h"
+#include "Mathlang/token.h"
 
 uint32_t mathlang_single_tokenize(const char_t *input, Token *result, const Allocator *allocator);
 uint32_t latex_single_tokenize(const char_t *input, Token *result, const Allocator *allocator);

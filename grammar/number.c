@@ -26,7 +26,7 @@
  **/
 
 #include "number.h"
-#include "mathlang/char_t.h"
+#include "Mathlang/char_t.h"
 
 uint32_t Number_add_uint64(Number addend, const uint64_t addon) {
   if (addon == 0) { return MATHLANG_COMPUTE_SUCCESS; }

@@ -18,32 +18,27 @@
  *
  *
  * Project Name: Mathlang
- * Module Name: grammar/Mathlang
- * Filename: parse.h
+ * Module Name: grammar/tokenize
+ * Filename: tokenizer.h
  * Creator: Yaokai Liu
- * Create Date: 2026-03-26
+ * Create Date: 2026-03-27
  * Copyright (c) 2026 Yaokai Liu. All rights reserved.
  **/
 
-#ifndef MATHLANG_PARSE_H
-#define MATHLANG_PARSE_H
+#ifndef MATHLANG_TOKENIZER_H
+#define MATHLANG_TOKENIZER_H
 
 #include "Mathlang/token.h"
-#include "stack.h"
-#include "context.h"
-#include "target.h"
-#include "tokenize/tokenizer.h"
+#include "Mathlang/error.h"
+#include "Mathlang/context.h"
+
+typedef struct Tokenizer Tokenizer;
+
+Tokenizer *XLRTokenizer_new(const char_t *src, MathlangContext *context, const Allocator *allocator);
+
+uint32_t XLRTokenizer_next(Tokenizer *tokenizer, Token *token, ErrInfo *errInfo, const Allocator *allocator);
+
+void XLRTokenizer_destroy(Tokenizer *tokenizer);
 
 
-MathEntry *parse(Tokenizer *tokenizer, MathlangContext *context, ErrInfo *errInfo, const Allocator *allocator);
-
-MathEntry *failed_to_get_next_state(
-    Stack *state_stack, Stack *token_stack, Token *token, const Allocator *allocator
-);
-MathEntry *failed_to_produce(Stack *state_stack, Stack *token_stack, Token *, uint32_t,
-                                const Allocator *allocator);
-MathEntry  *clean_parse_stack(Stack *state_stack, Stack *token_stack, const Allocator *allocator);
-
-
-
-#endif //MATHLANG_PARSE_H
+#endif //MATHLANG_TOKENIZER_H

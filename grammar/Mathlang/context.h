@@ -28,9 +28,22 @@
 #ifndef MATHLANG_CONTEXT_H
 #define MATHLANG_CONTEXT_H
 
-#include "mathlang/error.h"
-#include "mathlang/token.h"
+#include "array.h"
+#include "trie.h"
+#include "Mathlang/error.h"
+#include "Mathlang/token.h"
 
-typedef struct MathlangContext MathlangContext;
+typedef struct MathlangContext {
+  Array *name_array; // Array<char_t>
+
+  Array *ident_array; // Array<Identifier>
+  Trie *ident_trie; // Trie<char_t, REFER(Identifier)>
+
+  bool in_latex;
+} MathlangContext;
+
+
+void MathlangContext_state_action(MathlangContext * context, uint32_t state, Token * token, const Allocator * allocator);
+
 
 #endif //MATHLANG_CONTEXT_H

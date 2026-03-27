@@ -28,7 +28,7 @@
 #ifndef MATHLANG_STRING_T_H
 #define MATHLANG_STRING_T_H
 
-#include "mathlang/char_t.h"
+#include "Mathlang/char_t.h"
 #include <stdint.h>
 
 uint32_t stridx_o(char_t chr, const char_t *str);
