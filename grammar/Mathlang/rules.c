@@ -51,7 +51,6 @@
   } while (false)
 
 
-
 Adjective * Mathlang_Adjective_0 (Token [], MathlangContext *, ErrInfo *, const Allocator *) {
   return nullptr;
 }
@@ -188,11 +187,27 @@ NotationDefinition * Mathlang_NotationDefinition_0 (Token [], MathlangContext *,
   return nullptr;
 }
 
+NotationDefinition * Mathlang_NotationDefinition_1 (Token [], MathlangContext *, ErrInfo *, const Allocator *) {
+  return nullptr;
+}
+
 NotationDefinitions * Mathlang_NotationDefinitions_0 (Token [], MathlangContext *, ErrInfo *, const Allocator *) {
   return nullptr;
 }
 
 NotationDefinitions * Mathlang_NotationDefinitions_1 (Token [], MathlangContext *, ErrInfo *, const Allocator *) {
+  return nullptr;
+}
+
+NotationSymbol * Mathlang_NotationSymbol_0 (Token [], MathlangContext *, ErrInfo *, const Allocator *) {
+  return nullptr;
+}
+
+NotationSymbol * Mathlang_NotationSymbol_1 (Token [], MathlangContext *, ErrInfo *, const Allocator *) {
+  return nullptr;
+}
+
+NotationSymbol * Mathlang_NotationSymbol_2 (Token [], MathlangContext *, ErrInfo *, const Allocator *) {
   return nullptr;
 }
 

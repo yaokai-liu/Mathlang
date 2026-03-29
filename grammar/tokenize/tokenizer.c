@@ -40,10 +40,10 @@ typedef struct Tokenizer {
   uint32_t offset;
   uint32_t lineno;
   uint32_t column;
-  MathlangContext *context;
+  const MathlangContext *context;
 } Tokenizer;
 
-Tokenizer *XLRTokenizer_new(const char_t *src, MathlangContext *context, const Allocator *allocator) {
+Tokenizer *MathlangTokenizer_new(const char_t *src, const MathlangContext *context, const Allocator *allocator) {
   Tokenizer *tokenizer = allocator->calloc(1, sizeof(Tokenizer));
   tokenizer->allocator = allocator;
   tokenizer->context = context;
@@ -54,22 +54,26 @@ Tokenizer *XLRTokenizer_new(const char_t *src, MathlangContext *context, const A
   return tokenizer;
 }
 
-void XLRTokenizer_destroy(Tokenizer *tokenizer) {
+void MathlangTokenizer_destroy(Tokenizer *tokenizer) {
   tokenizer->allocator->free(tokenizer);
 }
 
 #define pText (tokenizer->src + tokenizer->offset)
 #define CONTEXT (tokenizer->context)
-uint32_t XLRTokenizer_next(Tokenizer *tokenizer, Token *token, ErrInfo *errInfo,
+uint32_t MathlangTokenizer_next(Tokenizer *tokenizer, Token *token, ErrInfo *errInfo,
                            const Allocator *allocator) {
   tokenizer->offset += pass_space(pText, &tokenizer->lineno, &tokenizer->column);
   token->type = MATHLANG_TOKEN_BAD_TOKEN;
   token->start.lineno = tokenizer->lineno;
   token->start.column = tokenizer->column;
   token->start.offset = tokenizer->offset;
-  const uint32_t length = (CONTEXT->in_latex)
-                        ? mathlang_single_tokenize(pText, token, allocator)
-                        : latex_single_tokenize(pText, token, allocator);
+  uint32_t length = 0;
+  switch (CONTEXT->token_env) {
+    case CONTEXT_TOKENIZE_LATEX:{ length = latex_single_tokenize(pText, token, allocator); break; }
+    case CONTEXT_TOKENIZE_MATHLANG:{ length = mathlang_single_tokenize(pText, token, allocator); break; }
+    case CONTEXT_TOKENIZE_NOTATION:{ length = arith_single_tokenize(pText, token, allocator); break; }
+    default:;
+  }
   if (token->type == MATHLANG_TOKEN_BAD_TOKEN) {
     errInfo->start.lineno = tokenizer->lineno;
     errInfo->start.column = tokenizer->column;
@@ -78,22 +82,25 @@ uint32_t XLRTokenizer_next(Tokenizer *tokenizer, Token *token, ErrInfo *errInfo,
     errInfo->code = MATHLANG_ERROR_UNRECOGNIZED_SYMBOL;
     return errInfo->code;
   }
-  if (token->type == MATHLANG_TOKEN_IDENTIFIER || token->type == MATHLANG_TOKEN_LATEX_SYMBOL) {
+  if (token->type == MATHLANG_TOKEN_IDENTIFIER || token->type == MATHLANG_TOKEN_NUMBER || token->type == MATHLANG_TOKEN_LATEX_SYMBOL) {
     REFER(Identifier) v_ident = Trie_get(CONTEXT->ident_trie, token->value);
     if (!v_ident) {
       REFER(char_t) v_name = Array_last_virt(CONTEXT->name_array) + 1;
       Array_append(CONTEXT->name_array, token->value, token->length + 1);
-      const Identifier ident = {.type = MATHLANG_IDENT_CATEGORY_NULL, .name = v_name};
+      const uint32_t cat = (token->type == MATHLANG_TOKEN_NUMBER) ? MATHLANG_IDENT_CATEGORY_NUMBER : MATHLANG_IDENT_CATEGORY_NULL;
+      const Identifier ident = {.category = cat, .name = v_name};
       Array_append(CONTEXT->ident_array, &ident, 1);
       v_ident = Array_last_virt(CONTEXT->ident_array);
       Trie_set(CONTEXT->ident_trie, token->value, v_ident);
-    } else if (CONTEXT->in_latex) {
+    } else if (token->type == MATHLANG_TOKEN_NUMBER) {
+      // Do nothing
+    } else if (CONTEXT->token_env) {
       const Identifier *ident = Array_virt2real(CONTEXT->ident_array, v_ident);
-      token->type = (ident->type == MATHLANG_IDENT_CATEGORY_LATEX_COMMAND)
+      token->type = (ident->category == MATHLANG_IDENT_CATEGORY_LATEX_COMMAND)
                   ? MATHLANG_TOKEN_LATEX_COMMAND : MATHLANG_TOKEN_LATEX_SYMBOL;
     } else {
       const Identifier *ident = Array_virt2real(CONTEXT->ident_array, v_ident);
-      switch (ident->type) {
+      switch (ident->category) {
         case MATHLANG_IDENT_CATEGORY_NOUN:          { token->type = MATHLANG_TOKEN_NOUN; break; }
         case MATHLANG_IDENT_CATEGORY_VERB:          { token->type = MATHLANG_TOKEN_VERB; break; }
         case MATHLANG_IDENT_CATEGORY_PREP:          { token->type = MATHLANG_TOKEN_PREP; break; }

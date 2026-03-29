@@ -34,11 +34,11 @@
 
 typedef struct Tokenizer Tokenizer;
 
-Tokenizer *XLRTokenizer_new(const char_t *src, MathlangContext *context, const Allocator *allocator);
+Tokenizer *MathlangTokenizer_new(const char_t *src, const MathlangContext *context, const Allocator *allocator);
 
-uint32_t XLRTokenizer_next(Tokenizer *tokenizer, Token *token, ErrInfo *errInfo, const Allocator *allocator);
+uint32_t MathlangTokenizer_next(Tokenizer *tokenizer, Token *token, ErrInfo *errInfo, const Allocator *allocator);
 
-void XLRTokenizer_destroy(Tokenizer *tokenizer);
+void MathlangTokenizer_destroy(Tokenizer *tokenizer);
 
 
 #endif //MATHLANG_TOKENIZER_H

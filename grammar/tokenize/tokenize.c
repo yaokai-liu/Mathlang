@@ -60,8 +60,8 @@ static uint32_t try_keyword_Theorem(const char_t *input, uint32_t offs, Token *r
 static uint32_t try_keyword_Proposition(const char_t *input, uint32_t offs, Token *result, const Allocator *allocator);
 static uint32_t try_keyword_Proof(const char_t *input, uint32_t offs, Token *result, const Allocator *allocator);
 static uint32_t try_keyword_Procedure(const char_t *input, uint32_t offs, Token *result, const Allocator *allocator);
-static uint32_t try_keyword_denoteas(const char_t *input, uint32_t offs, Token *result, const Allocator *allocator);
-static uint32_t try_keyword_latex(const char_t *input, uint32_t offs, Token *result, const Allocator *allocator);
+static uint32_t try_keyword_denote(const char_t *input, uint32_t offs, Token *result, const Allocator *allocator);
+static uint32_t try_keyword_as(const char_t *input, uint32_t offs, Token *result, const Allocator *allocator);
 
 static uint32_t try_symbol_DOUBLE_LEFT_SQUARE_BRACKET(const char_t * input, Token * result, const Allocator * allocator);
 static uint32_t try_symbol_DOUBLE_RIGHT_SQUARE_BRACKET(const char_t * input, Token * result, const Allocator * allocator);
@@ -71,8 +71,15 @@ static uint32_t try_startswith_letter_D(const char_t * input, Token * result, co
 static uint32_t try_startswith_letter_L(const char_t * input, Token * result, const Allocator * allocator);
 static uint32_t try_startswith_letter_P(const char_t * input, Token * result, const Allocator * allocator);
 static uint32_t try_startswith_letter_T(const char_t * input, Token * result, const Allocator * allocator);
+static uint32_t try_startswith_letter_a(const char_t * input, Token * result, const Allocator * allocator);
 static uint32_t try_startswith_letter_d(const char_t * input, Token * result, const Allocator * allocator);
-static uint32_t try_startswith_letter_l(const char_t * input, Token * result, const Allocator * allocator);
+static uint32_t try_endswith_AT_Ad(const char_t *input, Token *result, const Allocator *allocator);
+static uint32_t try_endswith_AT_A(const char_t *input, Token *result, const Allocator *allocator);
+static uint32_t try_endswith_AT_C(const char_t *input, Token *result, const Allocator *allocator);
+static uint32_t try_endswith_AT_N(const char_t *input, Token *result, const Allocator *allocator);
+static uint32_t try_endswith_AT_P(const char_t *input, Token *result, const Allocator *allocator);
+static uint32_t try_endswith_AT(const char_t * input, Token * result, const Allocator * allocator);
+
 
 static uint32_t mathlang_tokenize_single_char(const char_t *input, Token *result, const Allocator *allocator);
 static uint32_t latex_tokenize_single_char(const char_t *input, Token *result, const Allocator *allocator);
@@ -80,7 +87,7 @@ static uint32_t arith_tokenize_single_char(const char_t *input, Token *result, c
 
 static uint32_t try_pass_comment(const char *input, uint32_t *lineno, uint32_t *column);
 
-// [a-zA-Z][a-zA-Z0-9\-]*
+// [a-zA-Z][a-zA-Z0-9\-]+(@`CAT_NOTE`)
 inline uint32_t t_IDENTIFIER(const char_t * const input, Token * const result, const Allocator * const allocator) {
   const char_t *pText = input;
   if (startswithLetter(pText)) {
@@ -90,13 +97,14 @@ inline uint32_t t_IDENTIFIER(const char_t * const input, Token * const result, c
     return 0;
   }
   while (isIdentChar(pText)) { pText ++; }
-  const uint32_t len = pText - input;
-  result->type = MATHLANG_TOKEN_IDENTIFIER;
-  result->value = allocator->calloc(len + 1, sizeof(char_t));
-  allocator->memcpy(result->value, input, len);
-  ((char_t *) result->value)[len] = '\0';
-  result->length = pText - input;
-  return result->length;
+  const uint32_t length = pText - input;
+  const uint32_t len_note = try_endswith_AT(pText, result, allocator);
+  if (!len_note) { result->type = MATHLANG_TOKEN_IDENTIFIER; } else {pText += len_note; }
+  result->value = allocator->calloc(length + 1, sizeof(char_t));
+  allocator->memcpy(result->value, input, length);
+  ((char_t *) result->value)[length] = '\0';
+  result->length = length;
+  return  pText - input;
 }
 
 // [0-9]+((\.[0-9]+?)
@@ -146,16 +154,41 @@ inline uint32_t t_NUMBER(const char_t *input, Token *result, const Allocator *al
     const char_t * const tail = &input[sizeof(pattern) - 1 - offs];                     \
     if (isIdentChar(tail)) { goto __failed_kw_##_kw; }                                  \
     result->type = MATHLANG_TOKEN_##_type;                                              \
-    result->value = (void *) val;                                                       \
+    result->value = (void *) (uint64_t) val;                                            \
     result->length = lenof(#_kw);                                                       \
     return lenof(#_kw);                                                                 \
     __failed_kw_##_kw : return t_IDENTIFIER(input - offs, result, allocator);           \
   }
+#define fn_try_AT_keyword_val(_kw, _type)                                               \
+  inline uint32_t try_keyword_AT_##_kw(const char_t * const input, uint32_t const offs, \
+                                      Token * const result, const Allocator * const ) { \
+    const char_t pattern[] = string_t("@"#_kw);                                         \
+    for (uint32_t i = offs; i < sizeof(pattern) - 1; i++) {                             \
+      if (input[i - offs] != pattern[i]) { goto __failed_kw_##_kw; }                    \
+    }                                                                                   \
+    const char_t * const tail = &input[sizeof(pattern) - 1 - offs];                     \
+    if (isIdentChar(tail)) { goto __failed_kw_##_kw; }                                  \
+    result->type = MATHLANG_TOKEN_##_type;                                              \
+    return lenof(#_kw);                                                                 \
+    __failed_kw_##_kw : return 0;                                                       \
+  }
 
 fn_try_keyword(Procedure, PROCEDURE)
-fn_try_keyword(denoteas,  DENOTEAS)
+fn_try_keyword(denote,    DENOTE)
 fn_try_keyword(Proof,     PROOF)
-fn_try_keyword(latex,     LATEX)
+fn_try_keyword(as,        AS)
+
+fn_try_AT_keyword_val(Noun,   NOUN)
+fn_try_AT_keyword_val(Verb,   VERB)
+fn_try_AT_keyword_val(Prep,   PREP)
+fn_try_AT_keyword_val(Clause, CLAUSE)
+fn_try_AT_keyword_val(Num,    NUMBER)
+fn_try_AT_keyword_val(Adv,    ADVERB)
+fn_try_AT_keyword_val(Pron,   PRONOUN)
+fn_try_AT_keyword_val(Art,    ARTICLE)
+fn_try_AT_keyword_val(Adj,    ADJECTIVE)
+fn_try_AT_keyword_val(Conj,   CONJUNCTION)
+
 fn_try_keyword_val(Definition,  DEFINITION_TYPE,  MATHLANG_ENTRY_Definition)
 fn_try_keyword_val(Convention,  DEFINITION_TYPE,  MATHLANG_ENTRY_Convention)
 fn_try_keyword_val(Axiom,       AXIOM_TYPE,       MATHLANG_ENTRY_Axiom)
@@ -248,11 +281,64 @@ inline uint32_t try_startswith_letter_T(const char_t * input, Token * result, co
 }
 
 inline uint32_t try_startswith_letter_d(const char_t * input, Token * result, const Allocator * allocator) {
-  return try_keyword_denoteas(input, 1, result, allocator);
+  return try_keyword_denote(input, 1, result, allocator);
 }
 
-inline uint32_t try_startswith_letter_l(const char_t * input, Token * result, const Allocator * allocator) {
-  return try_keyword_latex(input, 1, result, allocator);
+inline uint32_t try_startswith_letter_a(const char_t * input, Token * result, const Allocator * allocator) {
+  return try_keyword_as(input, 1, result, allocator);
+}
+
+inline uint32_t try_endswith_AT_Ad(const char_t *input, Token *result, const Allocator *allocator) {
+  switch (*input) {
+    case 'j': { return try_keyword_AT_Adj(input + 1, 4, result, allocator); }
+    case 'v': { return try_keyword_AT_Adv(input + 1, 4, result, allocator); }
+    default: { return 0; }
+  }
+}
+
+inline uint32_t try_endswith_AT_A(const char_t *input, Token *result, const Allocator *allocator) {
+  switch (*input) {
+    case 'r': { return try_keyword_AT_Art(input + 1, 3, result, allocator); }
+    case 'd': { return try_endswith_AT_Ad(input + 1, result, allocator); }
+    default: { return 0; }
+  }
+}
+
+inline uint32_t try_endswith_AT_C(const char_t *input, Token *result, const Allocator *allocator) {
+  switch (*input) {
+    case 'l': { return try_keyword_AT_Clause(input + 1, 3, result, allocator); }
+    case 'o': { return try_keyword_AT_Conj(input + 1, 3, result, allocator); }
+    default: { return 0; }
+  }
+}
+inline uint32_t try_endswith_AT_N(const char_t *input, Token *result, const Allocator *allocator) {
+  switch (*input) {
+    case 'o': { return try_keyword_AT_Noun(input + 1, 3, result, allocator); }
+    case 'u': { return try_keyword_AT_Num(input + 1, 3, result, allocator); }
+    default: { return 0; }
+  }
+}
+
+inline uint32_t try_endswith_AT_P(const char_t *input, Token *result, const Allocator *allocator) {
+  const char_t *pText = input;
+  if (*pText != 'r') { return 0; } else { pText ++; }
+  switch (*pText) {
+    case 'e': { return try_keyword_AT_Prep(pText + 1, 4, result, allocator); }
+    case 'o': { return try_keyword_AT_Pron(pText + 1, 4, result, allocator); }
+    default: { return 0; }
+  }
+}
+
+inline uint32_t try_endswith_AT(const char_t * input, Token * result, const Allocator * allocator) {
+  if (*input != '@') { return 0; } else {input ++; }
+  switch (*input) {
+    case 'A': { return try_endswith_AT_A(input + 1, result, allocator);}
+    case 'C': { return try_endswith_AT_C(input + 1, result, allocator);}
+    case 'N': { return try_endswith_AT_N(input + 1, result, allocator);}
+    case 'P': { return try_endswith_AT_P(input + 1, result, allocator);}
+    case 'V': { return try_keyword_AT_Verb(input + 1, 2, result, allocator); }
+    default: { return 0; }
+  }
 }
 
 inline uint32_t mathlang_tokenize_single_char(const char_t *const input, Token *const result, const Allocator *) {
@@ -292,8 +378,8 @@ uint32_t mathlang_single_tokenize(const char_t * const input, Token * const resu
     case 'L': { return try_startswith_letter_L(input + 1, result, allocator); }
     case 'P': { return try_startswith_letter_P(input + 1, result, allocator); }
     case 'T': { return try_startswith_letter_T(input + 1, result, allocator); }
+    case 'a': { return try_startswith_letter_a(input + 1, result, allocator); }
     case 'd': { return try_startswith_letter_d(input + 1, result, allocator); }
-    case 'l': { return try_startswith_letter_l(input + 1, result, allocator); }
     default: {}
   }
   uint32_t length = 0;
@@ -412,7 +498,8 @@ uint32_t arith_single_tokenize(const char_t *input, Token *result, const Allocat
   if (isDecDigital(input)) { return t_NUMBER(input, result, allocator); }
   length = arith_tokenize_single_char(input, result, allocator);
   if (length > 0) { return length; }
-  length = t_IDENTIFIER(input, result, allocator);
+  if (*input == '\\') { return t_LATEX_COMMAND(input + 1, result, allocator); }
+  length = latex_tokenize_single_char(input, result, allocator);
   if (length > 0) { return length; }
   result->type = MATHLANG_TOKEN_BAD_TOKEN;
   result->value = nullptr;

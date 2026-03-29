@@ -41,7 +41,7 @@ MathEntry *parse(Tokenizer *tokenizer, MathlangContext *context, ErrInfo *errInf
   Stack *token_stack = Stack_new(allocator);
   uint32_t state = Mathlang_state_;
   Stack_push(state_stack, &state, sizeof(int32_t));
-  uint32_t status = XLRTokenizer_next(tokenizer, &token, errInfo, allocator);
+  uint32_t status = MathlangTokenizer_next(tokenizer, &token, errInfo, allocator);
   if (status != MATHLANG_SUCCESS) { return nullptr; }
   while (true) {
     const struct grammar_action *act = getParseAction(state, token.type);
@@ -52,7 +52,7 @@ MathEntry *parse(Tokenizer *tokenizer, MathlangContext *context, ErrInfo *errInf
       state = act->offset;
       Stack_push(token_stack, &token, sizeof(Token));
       Stack_push(state_stack, &state, sizeof(uint32_t));
-      status = XLRTokenizer_next(tokenizer, &token, errInfo, allocator);
+      status = MathlangTokenizer_next(tokenizer, &token, errInfo, allocator);
       if (status != MATHLANG_SUCCESS) {
         return clean_parse_stack(state_stack, token_stack, allocator);
       }

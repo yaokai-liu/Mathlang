@@ -29,19 +29,43 @@
 #define MATHLANG_CONTEXT_H
 
 #include "array.h"
+#include "avl-tree.h"
+#include "stack.h"
 #include "trie.h"
+#include "target.h"
 #include "Mathlang/error.h"
 #include "Mathlang/token.h"
 
+enum CONTEXT_ARRAY_ID_ENUM: uint32_t {
+  CONTEXT_ARRAY_NULL,
+  CONTEXT_ARRAY_NAME_ARRAY,
+  CONTEXT_ARRAY_IDENT_ARRAY,
+  CONTEXT_ARRAY_MATH_ENTRY_ARRAY,
+};
+
+enum CONTEXT_TOKENIZE_ID_ENUM: uint32_t {
+  CONTEXT_TOKENIZE_NULL,
+  CONTEXT_TOKENIZE_LATEX,
+  CONTEXT_TOKENIZE_MATHLANG,
+  CONTEXT_TOKENIZE_NOTATION,
+};
+
 typedef struct MathlangContext {
-  Array *name_array; // Array<char_t>
+  const Allocator *allocator;
+  Array *name_array;    // Array<char_t>
+  Array *ident_array;   // Array<Identifier>
+  Trie  *ident_trie;    // Trie<char_t, REFER(Identifier)>
 
-  Array *ident_array; // Array<Identifier>
-  Trie *ident_trie; // Trie<char_t, REFER(Identifier)>
+  Array *item_array;  // Array<MathEntry>
+  AVLTree *item_tree;  // AVLTree<REFER(Identifier), REFER(MathEntry)>
 
-  bool in_latex;
+  uint32_t token_env;
+  Stack *token_env_stack; // Stack<uint32_t>
 } MathlangContext;
 
+MathlangContext *MathlangContext_new(const Allocator *allocator);
+
+uint32_t MathlangContext_set_ident_cat(MathlangContext *context, REFER(Identifier) v_ident, uint32_t category);
 
 void MathlangContext_state_action(MathlangContext * context, uint32_t state, Token * token, const Allocator * allocator);
 

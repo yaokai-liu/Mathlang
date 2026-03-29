@@ -53,13 +53,14 @@ typedef Array Sentences, StateSentences, OperaSentences; // Array<Sentence>
 
 typedef struct Refer {} Refer;
 typedef struct LatexExpression {} LatexExpression;
-typedef struct LatexSymbol {} LatexSymbol, BareLatexSymbol;
+typedef struct LatexSymbol {} NotationSymbol, LatexSymbol, BareLatexSymbol;
 
 
 typedef struct {
-  uint32_t      type; // MATHLANG_IDENT_CATEGORY_ENUM
+  uint32_t      category; // MATHLANG_IDENT_CATEGORY_ENUM
   REFER(char_t) name;
 } Identifier;
+typedef Array MarkedIdentifiers; // Array<Identifier>
 
 
 #endif //MATHLANG_TARGET_H
