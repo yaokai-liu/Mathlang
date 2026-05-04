@@ -31,20 +31,73 @@
 #include "array.h"
 #include "Mathlang/char_t.h"
 
-typedef struct MathEntry {} MathEntry, Definition, Theorem, Procedure;
+
+/***************************************************/
+/******************* Declarations ******************/
+/***************************************************/
+
+typedef struct PreProcessMacro PreProcessMacro;
+typedef struct MathRecord MathEntry, Definition, Theorem, Procedure;
+typedef struct EntryHeader DefHeader, ThmHeader, ProcHeader;
+typedef struct TextBlock TextBlock;
+
+typedef struct Adverb Adverb;
+typedef struct Adjective Adjective;
+typedef struct Complement Complement;
+typedef struct Object Object;
+typedef Array Objective, Subjective; // Array<Object>
+typedef struct Verb Verb;
+typedef struct Noun NounPhrase, BareNounPhrase, NotedNoun, Noun;
+typedef Array NounPhrases; // Array<NounPhrase>
+
+typedef struct Notation Notation;
+typedef Array Notations; // Array<Notation>
+typedef struct NotationDefinition NotationDefinition;
+typedef Array NotationDefinitions; // Array<NotationDefinition>
+typedef struct Sentence Statement, Operation, Sentence, StateSentence, OperaSentence;
+typedef Array Sentences, StateSentences, OperaSentences; // Array<Sentence>
+
+typedef struct Refer Refer;
+typedef struct LatexExpression LatexExpression;
+typedef struct LatexSymbol NotationSymbol, LatexSymbol, BareLatexSymbol;
+
+typedef struct IntroItem IntroItem;
+typedef Array IntroItems; // Array<IntroItem>
+typedef struct Identifier Identifier;
+
+typedef struct PathString PathString;
+typedef Array PathStrings; // Array<PathString>
+typedef struct Pattern Pattern;
+
+/***************************************************/
+/******************* Definitions *******************/
+/***************************************************/
+
+typedef struct PreProcessMacro PreProcessMacro;
+typedef struct MathRecord {} MathEntry, Definition, Theorem, Procedure;
 typedef struct EntryHeader {} DefHeader, ThmHeader, ProcHeader;
 typedef struct TextBlock {} TextBlock;
 
 typedef struct Adverb {} Adverb;
 typedef struct Adjective {} Adjective;
 typedef struct Complement {} Complement;
-typedef struct Objective {} Objective, Subjective;
+typedef struct Object {
+  REFER(Noun) type;
+  Array *     modifiers; // Array<REFER(MathRecord)>
+  Notation   *notation;
+} Object;
+typedef Array Objective, Subjective; // Array<Object>
 typedef struct Verb {} Verb;
-
-typedef struct Noun {} NounPhrase, BareNounPhrase, NotedNoun;
+typedef struct Noun {
+  REFER(Noun) prototype;
+  Array *     modifiers; // Array<REFER(MathRecord)>
+} NounPhrase, BareNounPhrase, NotedNoun, Noun;
 typedef Array NounPhrases; // Array<NounPhrase>
 
-typedef struct Notation {} Notation;
+typedef struct Notation {
+  LatexSymbol *name;
+  Notations   *args;
+} Notation;
 typedef Array Notations; // Array<Notation>
 typedef struct NotationDefinition {} NotationDefinition;
 typedef Array NotationDefinitions; // Array<NotationDefinition>
@@ -53,14 +106,16 @@ typedef Array Sentences, StateSentences, OperaSentences; // Array<Sentence>
 
 typedef struct Refer {} Refer;
 typedef struct LatexExpression {} LatexExpression;
-typedef struct LatexSymbol {} NotationSymbol, LatexSymbol, BareLatexSymbol;
+typedef struct LatexSymbol {
 
+} NotationSymbol, LatexSymbol, BareLatexSymbol;
 
-typedef struct {
+typedef struct Identifier {
   uint32_t      category; // MATHLANG_IDENT_CATEGORY_ENUM
   REFER(char_t) name;
 } Identifier;
-typedef Array MarkedIdentifiers; // Array<Identifier>
 
+typedef struct PathString {} PathString;
+typedef Array PathStrings; // Array<PathString>
 
 #endif //MATHLANG_TARGET_H

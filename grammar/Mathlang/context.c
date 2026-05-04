@@ -49,15 +49,18 @@ MathlangContext *MathlangContext_new(const Allocator *allocator) {
   return context;
 }
 
+void MathlangContext_inject_identifiers(MathlangContext *) {}
+
 uint32_t MathlangContext_set_ident_cat(MathlangContext *context, REFER(Identifier) v_ident, uint32_t category) {
   Identifier *ident = Array_virt2real(context->ident_array, v_ident);
   if (!ident) { return MATHLANG_ERROR_TARGET_MISMATCH; }
   ident->category = category;
   return MATHLANG_SUCCESS;
 }
-#define ENTER_NOTATION Mathlang_state_AXIOM_TYPE_ThmHeader_LEFT_BRACKET_VERB_CLAUSE_LEFT_BRACKET
-#define EXIT_NOTATION Mathlang_state_AXIOM_TYPE_ThmHeader_LEFT_BRACKET_VERB_CLAUSE_LEFT_BRACKET_Notations_RIGHT_BRACKET
-#define IN_NOTATION_DEFINITION_(a) Mathlang_state_DEFINITION_TYPE_DefHeader_TextBlock_DENOTE_LEFT_BRACKET_##a
+
+#define ENTER_NOTATION Mathlang_state_LEFT_BRACKET
+#define EXIT_NOTATION Mathlang_state_LEFT_BRACKET_Notations_RIGHT_BRACKET
+#define IN_NOTATION_DEFINITION_(a) Mathlang_state_DENOTE_LEFT_BRACKET_##a
 #define _BEFORE_ENTER_LATEX_(a) IN_NOTATION_DEFINITION_(LEFT_SQUARE_BRACKET_NounPhrase_RIGHT_SQUARE_BRACKET_LEFT_PARENTHESIS_Notations_RIGHT_PARENTHESIS_AS_##a)
 #define ENTER_LATEX _BEFORE_ENTER_LATEX_(LATEX_DELIMITER)
 #define EXIT_LATEX _BEFORE_ENTER_LATEX_(LATEX_DELIMITER_LatexExpression_LATEX_DELIMITER)

@@ -135,6 +135,26 @@ Definition * Mathlang_Definition_1 (Token [], MathlangContext *, ErrInfo *, cons
   return nullptr;
 }
 
+Definition * Mathlang_Definition_2 (Token [], MathlangContext *, ErrInfo *, const Allocator *) {
+  return nullptr;
+}
+
+IntroItem * Mathlang_IntroItem_0 (Token [], MathlangContext *, ErrInfo *, const Allocator *) {
+  return nullptr;
+}
+
+IntroItem * Mathlang_IntroItem_1 (Token [], MathlangContext *, ErrInfo *, const Allocator *) {
+  return nullptr;
+}
+
+IntroItems * Mathlang_IntroItems_0 (Token [], MathlangContext *, ErrInfo *, const Allocator *) {
+  return nullptr;
+}
+
+IntroItems * Mathlang_IntroItems_1 (Token [], MathlangContext *, ErrInfo *, const Allocator *) {
+  return nullptr;
+}
+
 LatexExpression * Mathlang_LatexExpression_0 (Token [], MathlangContext *, ErrInfo *, const Allocator *) {
   return nullptr;
 }
@@ -164,6 +184,14 @@ MathEntry * Mathlang_MathEntry_1 (Token [], MathlangContext *, ErrInfo *, const 
 }
 
 MathEntry * Mathlang_MathEntry_2 (Token [], MathlangContext *, ErrInfo *, const Allocator *) {
+  return nullptr;
+}
+
+MathEntry * Mathlang_MathEntry_3 (Token [], MathlangContext *, ErrInfo *, const Allocator *) {
+  return nullptr;
+}
+
+MathEntry * Mathlang_MathEntry_4 (Token [], MathlangContext *, ErrInfo *, const Allocator *) {
   return nullptr;
 }
 
@@ -294,6 +322,34 @@ Operation * Mathlang_Operation_0 (Token [], MathlangContext *, ErrInfo *, const 
 Operation * Mathlang_Operation_1 (Token [], MathlangContext *, ErrInfo *, const Allocator *) {
   return nullptr;
 }
+PathStrings * Mathlang_PathStrings_0 (Token [], MathlangContext *, ErrInfo *, const Allocator *) {
+  return nullptr;
+}
+
+PathStrings * Mathlang_PathStrings_1 (Token [], MathlangContext *, ErrInfo *, const Allocator *) {
+  return nullptr;
+}
+
+PreProcessMacro * Mathlang_PreProcessMacro_0 (Token [], MathlangContext *, ErrInfo *, const Allocator *) {
+  return nullptr;
+}
+
+PreProcessMacro * Mathlang_PreProcessMacro_1 (Token [], MathlangContext *, ErrInfo *, const Allocator *) {
+  return nullptr;
+}
+
+PreProcessMacro * Mathlang_PreProcessMacro_2 (Token [], MathlangContext *, ErrInfo *, const Allocator *) {
+  return nullptr;
+}
+
+PreProcessMacro * Mathlang_PreProcessMacro_3 (Token [], MathlangContext *, ErrInfo *, const Allocator *) {
+  return nullptr;
+}
+
+PreProcessMacro * Mathlang_PreProcessMacro_4 (Token [], MathlangContext *, ErrInfo *, const Allocator *) {
+  return nullptr;
+}
+
 
 ProcHeader * Mathlang_ProcHeader_0 (Token [], MathlangContext *, ErrInfo *, const Allocator *) {
   return nullptr;
@@ -312,6 +368,14 @@ Refer * Mathlang_Refer_0 (Token [], MathlangContext *, ErrInfo *, const Allocato
 }
 
 Refer * Mathlang_Refer_1 (Token [], MathlangContext *, ErrInfo *, const Allocator *) {
+  return nullptr;
+}
+
+Refer * Mathlang_Refer_2 (Token [], MathlangContext *, ErrInfo *, const Allocator *) {
+  return nullptr;
+}
+
+Refer * Mathlang_Refer_3 (Token [], MathlangContext *, ErrInfo *, const Allocator *) {
   return nullptr;
 }
 
@@ -334,6 +398,15 @@ Sentences * Mathlang_Sentences_1 (Token [], MathlangContext *, ErrInfo *, const 
 StateSentence * Mathlang_StateSentence_0 (Token [], MathlangContext *, ErrInfo *, const Allocator *) {
   return nullptr;
 }
+
+StateSentences * Mathlang_StateSentences_0 (Token [], MathlangContext *, ErrInfo *, const Allocator *) {
+  return nullptr;
+}
+
+StateSentences * Mathlang_StateSentences_1 (Token [], MathlangContext *, ErrInfo *, const Allocator *) {
+  return nullptr;
+}
+
 
 Statement * Mathlang_Statement_0 (Token [], MathlangContext *, ErrInfo *, const Allocator *) {
   return nullptr;

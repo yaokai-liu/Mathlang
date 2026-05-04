@@ -38,6 +38,8 @@ Tokenizer *MathlangTokenizer_new(const char_t *src, const MathlangContext *conte
 
 uint32_t MathlangTokenizer_next(Tokenizer *tokenizer, Token *token, ErrInfo *errInfo, const Allocator *allocator);
 
+uint32_t MathlangTokenizer_tokenize(Tokenizer *tokenizer, Array/*<Token>*/ *token_array, ErrInfo *errInfo, const Allocator *allocator);
+
 void MathlangTokenizer_destroy(Tokenizer *tokenizer);
 
 

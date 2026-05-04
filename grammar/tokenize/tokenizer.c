@@ -124,3 +124,19 @@ uint32_t MathlangTokenizer_next(Tokenizer *tokenizer, Token *token, ErrInfo *err
   tokenizer->column += length;
   return MATHLANG_SUCCESS;
 }
+
+uint32_t MathlangTokenizer_tokenize(Tokenizer *tokenizer, Array/*<Token>*/ *token_array, ErrInfo *errInfo,
+                           const Allocator *allocator) {
+  if (!token_array) { return MATHLANG_SUCCESS; }
+  uint32_t result = MATHLANG_SUCCESS;
+  Token token = {};
+  do {
+    result = MathlangTokenizer_next(tokenizer, &token, errInfo, allocator);
+    if (result == MATHLANG_SUCCESS) {
+      Array_append(token_array, &token, 1);
+    } else {
+      break;
+    }
+  } while (token.type != MATHLANG_TOKEN_TERMINATOR);
+  return result;
+}

@@ -26,3 +26,7 @@
  **/
 
 #include "target.h"
+#include "Mathlang/token.h"
+void releaseToken(Token *, const Allocator *) {
+
+}
